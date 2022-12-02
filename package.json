@@ -1,0 +1,23 @@
+{
+  "name": "aoc-webhook",
+  "version": "1.0.0",
+  "description": "Send Advent of Code private leaderboard updates to a Discord webhook.",
+  "main": "dist",
+  "repository": "https://github.com/PondWader/AOC-Webhook",
+  "author": "PondWader",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/cron": "^2.0.0",
+    "@types/node": "^18.11.10",
+    "@types/node-fetch": "^2.6.2",
+    "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "chalk": "4",
+    "cron": "^2.1.0",
+    "dotenv": "^16.0.3",
+    "node-fetch": "2",
+    "sequelize": "^6.26.0",
+    "sqlite3": "^5.1.2"
+  }
+}
