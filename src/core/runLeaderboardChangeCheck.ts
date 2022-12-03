@@ -55,30 +55,42 @@ export default async function runLeaderboardChangeCheck() {
             const newlyCompletedTasks: {
                 day: number;
                 task: number;
-                completedAt: Date;
+                completedAt: number;
             }[] = [];
 
             for await (const [day, dayData] of Object.entries(member.completion_day_level)) {
                 for (const [task, taskData] of Object.entries(dayData)) {
-                    if (!savedCompletedTasks.find(t => t.day === parseInt(day) && t.task === parseInt(task))) newlyCompletedTasks.push({
-                        day: parseInt(day),
-                        task: parseInt(task),
-                        completedAt: new Date(taskData.get_star_ts * 1000)
-                    })
+                    if (!savedCompletedTasks.find(t => t.day === parseInt(day) && t.task === parseInt(task))) {
+                        newlyCompletedTasks.push({
+                            day: parseInt(day),
+                            task: parseInt(task),
+                            completedAt: taskData.get_star_ts
+                        })
+
+                        await CompletedTask.create({
+                            memberId: member.id,
+                            leaderboardId: parseInt(process.env['LEADERBOARD_ID']!),
+                            day: parseInt(day),
+                            task: parseInt(task)
+                        });
+                    }
                 }
             }
 
             if (localScoreChange || newlyCompletedTasks.length !== 0) {
                 await sendWebhook(process.env['WEBHOOK_URL']!, {
                     title: 'Member score update',
-                    description: `**Member:** ${member.name}\n**Change:** +${localScoreChange}\n**Newly completed tasks:**\n${newlyCompletedTasks.length === 0 ? 'None' : newlyCompletedTasks.map(t => `Day ${t.day}, task ${t.task}`).join('\n')}`
+                    description: `**Member:** ${member.name}\n**Change:** +${localScoreChange}\n**Newly completed tasks:**\n${newlyCompletedTasks.length === 0 ? 'None' : newlyCompletedTasks.map(t => `Day ${t.day}, task ${t.task} at <t:${t.completedAt}>`).join('\n')}`
                 });
-                break;
             }
+
+            await savedMemberData.set({
+                lastCollectedLocalScore: member.local_score
+            }).save();
         }
 
         Logger.info('Finished running leaderboard change check.')
-    } catch(err) {
+    } catch (err) {
         Logger.error('An error occured!');
         console.error(err);
     }
