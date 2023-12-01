@@ -33,5 +33,8 @@ export default function getLeaderboardData(leaderboardId: number, year: number, 
         headers: {
             'cookie': `session=${session}`
         }
-    }).then(res => res.json())
+    }).then(res => {
+        if (res.headers.get('content-type') === 'text/html') throw new Error('Received HTML response when expecting JSON, is your session cookie valid and up to date?');
+        return res.json();
+    })
 }
